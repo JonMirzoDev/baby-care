@@ -1,58 +1,97 @@
-# BabyCare
+# 👶 Baby Care Management System
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.0.3.
+A comprehensive baby care management system built with modern web technologies to help parents track and manage their baby's daily activities, growth, and development.
 
-## Development server
+## 🚀 Features
 
-To start a local development server, run:
+- 📱 Responsive design for both desktop and mobile
+- 🔐 Secure authentication system
+- 📊 Dashboard for quick overview
+- 📝 Track daily activities:
+  - Feeding schedules
+  - Sleep patterns
+  - Diaper changes
+  - Growth measurements
+  - Milestones
+- 📈 Visual data representation
+- 📅 Schedule management
+- 🔔 Reminders and notifications
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **Angular 17** - Latest version of the powerful frontend framework
+- **TypeScript** - For type-safe code and better developer experience
+- **SCSS** - For advanced styling capabilities
+- **Angular Material** - UI component library
+- **NgRx** - State management (planned)
+- **RxJS** - Reactive programming
+- **Chart.js** - For data visualization
+
+### Backend & Infrastructure
+- **Supabase** - Backend as a Service (BaaS)
+  - Real-time database
+  - Authentication
+  - File storage
+  - Serverless functions
+
+### Development Tools
+- **ESLint** - Code quality and style
+- **Prettier** - Code formatting
+- **Jest** - Unit testing
+- **Cypress** - E2E testing (planned)
+
+## 🎯 Purpose
+
+This project serves as a demonstration of modern Angular development practices and architectural patterns. It showcases:
+
+- Clean Architecture principles
+- Lazy loading modules
+- Component-driven development
+- Reactive forms with validation
+- Route guards and authentication
+- Real-time data handling
+- State management
+- Unit testing
+- Responsive design
+
+## 🚀 Getting Started
+
+1. Clone the repository
+
+```bash
+git clone https://github.com/your-username/baby-care.git
+```
+
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Start the development server
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+4. Build the project
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+5. Run unit tests
 
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
+6. Run end-to-end tests
 
 ```bash
 ng e2e
 ```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
 
 ## Additional Resources
 
