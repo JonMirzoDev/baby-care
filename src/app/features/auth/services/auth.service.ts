@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
-import { tap, catchError, map } from 'rxjs/operators';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { BehaviorSubject } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../../../environments/environment';
 
 export interface User {
   id: string;
   email: string;
   name: string;
+  avatar_url?: string;
 }
 
 export interface AuthState {
@@ -17,113 +20,139 @@ export interface AuthState {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthService {
+  private supabase: SupabaseClient;
   private readonly TOKEN_KEY = 'auth_token';
-  private readonly REFRESH_TOKEN_KEY = 'refresh_token';
-  
+
   private authState = new BehaviorSubject<AuthState>({
     user: null,
     accessToken: localStorage.getItem(this.TOKEN_KEY),
     loading: false,
-    error: null
+    error: null,
   });
 
   constructor(private router: Router) {
+    this.supabase = createClient(
+      environment.supabaseUrl,
+      environment.supabaseKey,
+      {
+        auth: {
+          autoRefreshToken: true,
+          persistSession: true,
+          storage: localStorage,
+        },
+      }
+    );
     this.initializeAuth();
   }
 
   // Public observables for components to subscribe to
-  user$ = this.authState.pipe(map(state => state.user));
-  isAuthenticated$ = this.authState.pipe(map(state => !!state.user));
-  loading$ = this.authState.pipe(map(state => state.loading));
-  error$ = this.authState.pipe(map(state => state.error));
+  user$ = this.authState.pipe(map((state) => state.user));
+  isAuthenticated$ = this.authState.pipe(map((state) => !!state.user));
+  loading$ = this.authState.pipe(map((state) => state.loading));
+  error$ = this.authState.pipe(map((state) => state.error));
 
-  private initializeAuth(): void {
-    const token = localStorage.getItem(this.TOKEN_KEY);
-    if (token) {
-      this.validateAndRefreshToken();
+  private async initializeAuth() {
+    try {
+      // Get initial session
+      const {
+        data: { session },
+        error: sessionError,
+      } = await this.supabase.auth.getSession();
+      if (sessionError) throw sessionError;
+
+      if (session) {
+        this.handleAuthSuccess(session);
+      }
+
+      // Listen for auth changes
+      this.supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_IN' && session) {
+          this.handleAuthSuccess(session);
+        } else if (event === 'SIGNED_OUT') {
+          this.handleSignOut();
+        }
+      });
+    } catch (error: any) {
+      console.error('Auth initialization error:', error);
+      this.handleAuthError(error);
     }
   }
 
-  login(email: string, password: string): Observable<User> {
+  async signInWithGoogle() {
     this.setLoading(true);
-    
-    // TODO: Replace with actual API call
-    return of({ id: '1', email, name: 'Test User' }).pipe(
-      tap(user => {
-        const fakeToken = 'fake_token_' + Date.now();
-        this.handleAuthSuccess(user, fakeToken);
-      }),
-      catchError(error => {
-        this.handleAuthError(error);
-        return throwError(() => error);
-      })
-    );
+    try {
+      const { error } = await this.supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      this.handleAuthError(error);
+    }
   }
 
-  register(name: string, email: string, password: string): Observable<User> {
-    this.setLoading(true);
-    
-    // TODO: Replace with actual API call
-    return of({ id: '1', email, name }).pipe(
-      tap(user => {
-        const fakeToken = 'fake_token_' + Date.now();
-        this.handleAuthSuccess(user, fakeToken);
-      }),
-      catchError(error => {
-        this.handleAuthError(error);
-        return throwError(() => error);
-      })
-    );
+  async signOut() {
+    try {
+      const { error } = await this.supabase.auth.signOut();
+      if (error) throw error;
+      this.handleSignOut();
+    } catch (error: any) {
+      this.handleAuthError(error);
+    }
   }
 
-  logout(): void {
-    localStorage.removeItem(this.TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    this.authState.next({
-      user: null,
-      accessToken: null,
-      loading: false,
-      error: null
-    });
-    this.router.navigate(['/auth/login']);
-  }
+  private handleAuthSuccess(session: any) {
+    const user: User = {
+      id: session.user.id,
+      email: session.user.email,
+      name: session.user.user_metadata?.full_name || session.user.email,
+      avatar_url: session.user.user_metadata?.avatar_url,
+    };
 
-  private handleAuthSuccess(user: User, token: string): void {
-    localStorage.setItem(this.TOKEN_KEY, token);
+    localStorage.setItem(this.TOKEN_KEY, session.access_token);
     this.authState.next({
       user,
-      accessToken: token,
+      accessToken: session.access_token,
       loading: false,
-      error: null
+      error: null,
     });
     this.router.navigate(['/dashboard']);
   }
 
-  private handleAuthError(error: any): void {
+  private handleSignOut() {
+    localStorage.removeItem(this.TOKEN_KEY);
+    this.authState.next({
+      user: null,
+      accessToken: null,
+      loading: false,
+      error: null,
+    });
+    this.router.navigate(['/auth/login']);
+  }
+
+  private handleAuthError(error: any) {
+    console.error('Auth error:', error);
     this.authState.next({
       ...this.authState.value,
       loading: false,
-      error: error.message || 'Authentication failed'
+      error: error.message || 'Authentication failed',
     });
   }
 
-  private setLoading(loading: boolean): void {
+  private setLoading(loading: boolean) {
     this.authState.next({
       ...this.authState.value,
       loading,
-      error: null
+      error: null,
     });
-  }
-
-  private validateAndRefreshToken(): void {
-    // TODO: Implement token validation and refresh logic
-    // This should verify the current token and refresh if needed
   }
 
   getAuthToken(): string | null {
     return this.authState.value.accessToken;
   }
-} 
+}

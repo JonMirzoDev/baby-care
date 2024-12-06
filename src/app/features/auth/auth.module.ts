@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { ReactiveFormsModule } from '@angular/forms';
 
 const routes: Routes = [
   {
@@ -10,9 +9,9 @@ const routes: Routes = [
       import('./components/login/login.component').then(c => c.LoginComponent)
   },
   {
-    path: 'register',
-    loadComponent: () => 
-      import('./components/register/register.component').then(c => c.RegisterComponent)
+    path: 'callback',
+    loadComponent: () =>
+      import('./components/callback/auth-callback.component').then(c => c.AuthCallbackComponent)
   },
   {
     path: '',
@@ -25,7 +24,6 @@ const routes: Routes = [
   declarations: [],
   imports: [
     CommonModule,
-    ReactiveFormsModule,
     RouterModule.forChild(routes)
   ]
 })

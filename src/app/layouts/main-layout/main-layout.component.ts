@@ -20,7 +20,7 @@ import { ThemeService } from '../../shared/services/theme.service';
             <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
             <ng-container *ngIf="authService.isAuthenticated$ | async; else loginButton">
               <a routerLink="/profile" routerLinkActive="active">Profile</a>
-              <button class="btn-logout" (click)="authService.logout()">Logout</button>
+              <button class="btn-logout" (click)="authService.signOut()">Logout</button>
             </ng-container>
             <ng-template #loginButton>
               <a routerLink="/auth/login" class="btn-login" routerLinkActive="active">Login</a>

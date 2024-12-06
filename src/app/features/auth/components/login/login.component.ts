@@ -1,182 +1,180 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule],
   template: `
-    <div class="login-container">
-      <h2>Login</h2>
-      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-        <div class="form-group">
-          <label for="email">Email</label>
-          <input 
-            id="email" 
-            type="email" 
-            formControlName="email"
-            [class.error]="isFieldInvalid('email')"
-          >
-          <div class="error-message" *ngIf="isFieldInvalid('email')">
-            <span *ngIf="loginForm.get('email')?.errors?.['required']">Email is required</span>
-            <span *ngIf="loginForm.get('email')?.errors?.['email']">Please enter a valid email</span>
+    <div class="login-page">
+      <div class="login-container">
+        <div class="logo-section">
+          <h1>Baby Care</h1>
+          <p class="tagline">Track your baby's growth with love</p>
+        </div>
+
+        <div class="auth-section">
+          <button class="btn-google" (click)="signInWithGoogle()">
+            <svg class="google-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+            <span>Continue with Google</span>
+          </button>
+
+          <div class="error-message" *ngIf="(authService.error$ | async) as error">
+            {{ error }}
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="password">Password</label>
-          <input 
-            id="password" 
-            type="password" 
-            formControlName="password"
-            [class.error]="isFieldInvalid('password')"
-          >
-          <div class="error-message" *ngIf="isFieldInvalid('password')">
-            Password is required
+        <div class="info-section">
+          <p>By continuing, you agree to our</p>
+          <div class="links">
+            <a href="#">Terms of Service</a>
+            <span>•</span>
+            <a href="#">Privacy Policy</a>
           </div>
         </div>
-
-        <div class="error-message" *ngIf="(authService.error$ | async) as error">
-          {{ error }}
-        </div>
-
-        <button 
-          type="submit" 
-          [disabled]="!loginForm.valid || (authService.loading$ | async)"
-        >
-          <span *ngIf="!(authService.loading$ | async)">Login</span>
-          <span *ngIf="authService.loading$ | async">Logging in...</span>
-        </button>
-
-        <p class="register-link">
-          Don't have an account? <a routerLink="/auth/register">Register here</a>
-        </p>
-      </form>
+      </div>
     </div>
   `,
   styles: [`
-    .login-container {
-      max-width: 400px;
-      margin: 2rem auto;
-      padding: 2rem;
-      background: white;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    .login-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+      padding: 1rem;
     }
 
-    h2 {
+    .login-container {
+      width: 100%;
+      max-width: 400px;
+      padding: 2.5rem;
+      background: var(--bg-primary);
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
       text-align: center;
-      color: #333;
+    }
+
+    .logo-section {
+      margin-bottom: 2.5rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--accent-color);
+      margin: 0;
+      letter-spacing: -0.5px;
+    }
+
+    .tagline {
+      color: var(--text-secondary);
+      font-size: 1.1rem;
+      margin: 0.5rem 0 0;
+    }
+
+    .auth-section {
       margin-bottom: 2rem;
     }
 
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
-
-    label {
-      display: block;
-      margin-bottom: 0.5rem;
-      color: #555;
-    }
-
-    input {
+    .btn-google {
       width: 100%;
-      padding: 0.75rem;
-      border: 1px solid #ddd;
-      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 0.875rem 1.5rem;
+      background-color: white;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
       font-size: 1rem;
-      transition: border-color 0.3s ease;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
     }
 
-    input:focus {
-      outline: none;
-      border-color: #007bff;
+    .btn-google:hover {
+      background-color: var(--bg-secondary);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
 
-    input.error {
-      border-color: #dc3545;
+    .btn-google:active {
+      transform: translateY(0);
+    }
+
+    .google-icon {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
     }
 
     .error-message {
-      color: #dc3545;
+      margin-top: 1rem;
+      color: var(--danger-color);
       font-size: 0.875rem;
-      margin-top: 0.25rem;
-    }
-
-    button {
-      width: 100%;
+      background-color: rgba(244, 67, 54, 0.1);
       padding: 0.75rem;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
+      border-radius: 6px;
     }
 
-    button:hover:not(:disabled) {
-      background-color: #0056b3;
+    .info-section {
+      color: var(--text-secondary);
+      font-size: 0.875rem;
     }
 
-    button:disabled {
-      background-color: #ccc;
-      cursor: not-allowed;
+    .info-section p {
+      margin: 0 0 0.5rem;
     }
 
-    .register-link {
-      text-align: center;
-      margin-top: 1.5rem;
+    .links {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+      align-items: center;
     }
 
-    .register-link a {
-      color: #007bff;
+    .links a {
+      color: var(--accent-color);
       text-decoration: none;
+      transition: color 0.2s ease;
     }
 
-    .register-link a:hover {
+    .links a:hover {
+      color: var(--accent-hover);
       text-decoration: underline;
+    }
+
+    .links span {
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 2rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .tagline {
+        font-size: 1rem;
+      }
     }
   `]
 })
 export class LoginComponent {
-  loginForm: FormGroup;
+  constructor(public authService: AuthService) {}
 
-  constructor(
-    private fb: FormBuilder,
-    public authService: AuthService
-  ) {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required]
-    });
-  }
-
-  isFieldInvalid(fieldName: string): boolean {
-    const field = this.loginForm.get(fieldName);
-    return !!field && field.invalid && (field.dirty || field.touched);
-  }
-
-  onSubmit() {
-    if (this.loginForm.valid) {
-      const { email, password } = this.loginForm.value;
-      this.authService.login(email, password).subscribe({
-        error: () => {
-          // Error is handled by the AuthService
-          this.loginForm.get('password')?.reset();
-        }
-      });
-    } else {
-      Object.keys(this.loginForm.controls).forEach(key => {
-        const control = this.loginForm.get(key);
-        if (control) {
-          control.markAsTouched();
-        }
-      });
-    }
+  async signInWithGoogle() {
+    await this.authService.signInWithGoogle();
   }
 } 
