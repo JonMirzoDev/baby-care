@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { LoadingComponent } from './shared/components/loading/loading.component';
 import { LoadingService } from './shared/services/loading.service';
+import { ThemeService } from './shared/services/theme.service';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
@@ -38,6 +39,13 @@ import { trigger, transition, style, animate } from '@angular/animations';
     ])
   ]
 })
-export class AppComponent {
-  constructor(public loadingService: LoadingService) {}
+export class AppComponent implements OnInit {
+  constructor(
+    public loadingService: LoadingService,
+    private themeService: ThemeService
+  ) {}
+
+  ngOnInit() {
+    this.themeService.initializeTheme();
+  }
 }

@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../../features/auth/services/auth.service';
+import { ThemeService } from '../../shared/services/theme.service';
 
 @Component({
   selector: 'app-main-layout',
@@ -10,10 +12,27 @@ import { CommonModule } from '@angular/common';
     <div class="layout">
       <header>
         <nav>
-          <h1>Baby Care</h1>
+          <div class="logo">
+            <a routerLink="/" class="brand">Baby Care</a>
+          </div>
+          
           <div class="nav-links">
-            <a routerLink="/dashboard">Dashboard</a>
-            <a routerLink="/auth/login">Logout</a>
+            <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+            <ng-container *ngIf="authService.isAuthenticated$ | async; else loginButton">
+              <a routerLink="/profile" routerLinkActive="active">Profile</a>
+              <button class="btn-logout" (click)="authService.logout()">Logout</button>
+            </ng-container>
+            <ng-template #loginButton>
+              <a routerLink="/auth/login" class="btn-login" routerLinkActive="active">Login</a>
+            </ng-template>
+            <button class="theme-toggle" (click)="themeService.toggleTheme()">
+              <ng-container *ngIf="themeService.isDarkTheme$ | async; else lightIcon">
+                🌞
+              </ng-container>
+              <ng-template #lightIcon>
+                🌙
+              </ng-template>
+            </button>
           </div>
         </nav>
       </header>
@@ -43,10 +62,13 @@ import { CommonModule } from '@angular/common';
     }
 
     header {
-      background-color: #f8f9fa;
-      border-bottom: 1px solid #dee2e6;
+      background-color: var(--bg-primary);
+      box-shadow: 0 2px 4px var(--shadow-color);
       margin: 0;
       padding: 0;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
     }
 
     nav {
@@ -60,25 +82,85 @@ import { CommonModule } from '@angular/common';
       box-sizing: border-box;
     }
 
-    h1 {
-      margin: 0;
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+
+    .brand {
       font-size: 1.5rem;
+      font-weight: bold;
+      color: var(--accent-color);
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+
+    .brand:hover {
+      color: var(--accent-hover);
     }
 
     .nav-links {
       display: flex;
       gap: 1rem;
+      align-items: center;
     }
 
     .nav-links a {
       text-decoration: none;
-      color: #333;
+      color: var(--text-secondary);
       padding: 0.5rem 1rem;
       border-radius: 4px;
+      transition: all 0.3s ease;
     }
 
     .nav-links a:hover {
-      background-color: #e9ecef;
+      color: var(--accent-color);
+      background-color: var(--bg-secondary);
+    }
+
+    .nav-links a.active {
+      color: var(--accent-color);
+      background-color: var(--bg-secondary);
+    }
+
+    .btn-login {
+      background-color: var(--accent-color) !important;
+      color: #ffffff !important;
+    }
+
+    .btn-login:hover {
+      background-color: var(--accent-hover) !important;
+    }
+
+    .btn-logout {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      background-color: var(--danger-color);
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-logout:hover {
+      background-color: var(--danger-hover);
+    }
+
+    .theme-toggle {
+      padding: 0.5rem;
+      border: none;
+      border-radius: 4px;
+      background-color: transparent;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      transform: scale(1.1);
     }
 
     main {
@@ -91,8 +173,8 @@ import { CommonModule } from '@angular/common';
     }
 
     footer {
-      background-color: #f8f9fa;
-      border-top: 1px solid #dee2e6;
+      background-color: var(--bg-primary);
+      border-top: 1px solid var(--border-color);
       padding: 1rem;
       text-align: center;
       margin-top: auto;
@@ -100,7 +182,32 @@ import { CommonModule } from '@angular/common';
 
     footer p {
       margin: 0;
+      color: var(--text-secondary);
+    }
+
+    @media (max-width: 768px) {
+      nav {
+        padding: 1rem;
+      }
+
+      .nav-links {
+        gap: 0.5rem;
+      }
+
+      .nav-links a {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.9rem;
+      }
     }
   `]
 })
-export class MainLayoutComponent {} 
+export class MainLayoutComponent implements OnInit {
+  constructor(
+    public authService: AuthService,
+    public themeService: ThemeService
+  ) {}
+
+  ngOnInit() {
+    this.themeService.initializeTheme();
+  }
+} 
