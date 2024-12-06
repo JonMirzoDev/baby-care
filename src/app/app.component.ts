@@ -1,14 +1,21 @@
 import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { LoadingComponent } from './shared/components/loading/loading.component';
+import { LoadingService } from './shared/services/loading.service';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, CommonModule, LoadingComponent],
   template: `
     <main>
-      <router-outlet></router-outlet>
+      <div [@fadeAnimation]="o.isActivated ? o.activatedRoute : ''">
+        <router-outlet #o="outlet"></router-outlet>
+      </div>
     </main>
+    <app-loading *ngIf="loadingService.loading$ | async"></app-loading>
   `,
   styles: [`
     :host {
@@ -21,8 +28,16 @@ import { RouterOutlet } from '@angular/router';
       margin: 0;
       padding: 0;
     }
-  `]
+  `],
+  animations: [
+    trigger('fadeAnimation', [
+      transition('* => *', [
+        style({ opacity: 0 }),
+        animate('300ms ease-in', style({ opacity: 1 }))
+      ])
+    ])
+  ]
 })
 export class AppComponent {
-  title = 'baby-care';
+  constructor(public loadingService: LoadingService) {}
 }
